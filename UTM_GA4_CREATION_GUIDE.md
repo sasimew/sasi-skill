@@ -39,6 +39,64 @@ Deploy the website when any of these apply:
 
 For a normal UTM-only link, do not deploy just to create the URL.
 
+## How UTM Reaches GA4
+
+UTM is not a second GA4 tag and it is not normally hardcoded into the
+website's analytics code. UTM is a query string attached to the shared URL.
+The existing GA4 tag reads the landing page visit and GA4 uses the UTM values
+as acquisition information.
+
+### End-to-end flow
+
+~~~text
+1. Jenosize shares the tagged URL
+   https://sasi.asia/?utm_source=jenosize&utm_medium=referral&...
+
+2. The visitor clicks the URL
+
+3. The browser requests the page and keeps the query string in location.search
+
+4. The page loads the existing gtag configuration for G-S0N3M3191G
+
+5. gtag sends the initial page_view to the GA4 property
+
+6. GA4 reads the UTM values and assigns campaign attribution to the session
+
+7. Later events from that session can be analysed with the same acquisition
+   dimensions, subject to GA4 attribution and session rules
+
+8. GA4 Realtime can show the visit quickly; standard reports process later
+~~~
+
+### URL-to-GA4 mapping
+
+| URL value | GA4 acquisition dimension | Example result |
+|---|---|---|
+| utm_source=jenosize | Session source | jenosize |
+| utm_medium=referral | Session medium | referral |
+| utm_campaign=jenosize_profile | Session campaign | jenosize_profile |
+| utm_content=website_link | Session manual ad content | website_link |
+
+The website only needs one working GA4 implementation on the destination page.
+The UTM link and the existing `page_view` are enough for standard campaign
+reporting. The optional `jenosize_landing` event currently used on SASI.ASIA
+is an extra diagnostic event that can show which partner landing event fired;
+it is not required for normal UTM attribution and must not be duplicated.
+
+### Conditions for attribution to work
+
+- The destination page must load `G-S0N3M3191G` exactly once.
+- The URL query string must reach the page without being stripped by a redirect.
+- The visitor must open the tagged URL before the relevant session begins.
+- The visitor's browser must allow the GA4 request; ad blockers or consent
+  controls can prevent measurement.
+- Internal links should not carry the partner UTM values, or later visits may
+  be misclassified as coming from the partner.
+
+If only the URL is created and shared, no deployment is required. Deployment
+is required when the tagged URL is embedded into website code, a redirect is
+changed, or the GA4/custom tracking implementation is changed.
+
 ## UTM Naming Standard
 
 Use lowercase, stable, descriptive values.
