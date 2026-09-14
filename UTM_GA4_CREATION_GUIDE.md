@@ -178,4 +178,3 @@ git push origin main
 
 Never commit a GitHub PAT. Keep authentication in GitHub CLI and the local
 operating system keychain.
-
